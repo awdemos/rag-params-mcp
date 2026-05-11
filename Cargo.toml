@@ -1,0 +1,22 @@
+[package]
+name = "rag-params-mcp"
+version = "0.1.0"
+edition = "2021"
+description = "MCP server for rag-params-finder semantic memory"
+authors = ["awdemos"]
+
+[dependencies]
+rmcp = { version = "1.6", features = ["server", "macros", "transport-io", "schemars"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
