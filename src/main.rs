@@ -157,6 +157,12 @@ impl MemoryServer {
 
         Ok(json)
     }
+
+    fn format_json_result(value: serde_json::Value) -> Result<CallToolResult, rmcp::ErrorData> {
+        let text = serde_json::to_string_pretty(&value)
+            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
+        Ok(CallToolResult::success(vec![Content::text(text)]))
+    }
 }
 
 #[tool_router]
@@ -175,10 +181,7 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/sessions/query", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "search_prompts", description = "Semantic search across indexed prompt libraries. Find relevant prompts, templates, and documentation.")]
@@ -195,10 +198,7 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/prompts/query", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "cross_library_search", description = "Search across both sessions and prompts simultaneously. Returns top results from each source.")]
@@ -215,10 +215,7 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/search", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "index_session_chunk", description = "Index a single session chunk into the vector store for semantic search. Use for real-time session indexing.")]
@@ -236,10 +233,7 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/sessions/chunk", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "index_prompt", description = "Index a single prompt document into the vector store. The prompt becomes searchable via semantic search.")]
@@ -261,10 +255,7 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/prompts/index", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "render_prompt", description = "Render a prompt template with variable substitution. Uses Python string.Template.safe_substitute semantics.")]
@@ -279,28 +270,19 @@ impl MemoryServer {
         });
 
         let result = self.post_json("/prompts/render", body).await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "list_sessions", description = "List all session IDs that have been indexed in the vector store.")]
     async fn list_sessions(&self) -> Result<CallToolResult, rmcp::ErrorData> {
         let result = self.get_json("/sessions/indexed").await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 
     #[tool(name = "list_libraries", description = "List all prompt library IDs that have been indexed.")]
     async fn list_libraries(&self) -> Result<CallToolResult, rmcp::ErrorData> {
         let result = self.get_json("/prompts/libraries").await?;
-        let text = serde_json::to_string_pretty(&result)
-            .map_err(|e| rmcp::ErrorData::internal_error(format!("Serialize failed: {}", e), None))?;
-
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Self::format_json_result(result)
     }
 }
 
